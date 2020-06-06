@@ -24,10 +24,16 @@ This document is included as a reference for porting libco. Please submit any
 ports you create to me, so that libco can become more useful. Please note that
 since libco is permissively licensed, you must submit your code as a work of the
 public domain in order for it to be included in the official distribution.
+
 Full credit will be given in the source code of the official release. Please
 do not bother submitting code to me under any other license -- including GPL,
 LGPL, BSD or CC -- I am not interested in creating a library with multiple
 different licenses depending on which targets are used.
+
+Note that there are a variety of compile-time options in `settings.h`,
+so if you want to use libco on a platform where it is not supported by default,
+you may be able to configure the implementation appropriately without having
+to make a whole new port.
 
 # Synopsis
 ```c
@@ -40,6 +46,7 @@ void       co_switch(cothread_t cothread);
 ```
 
 # Usage
+## cothread_t
 ```c
 typedef void* cothread_t;
 ```
@@ -49,27 +56,34 @@ Handle must be of type `void*`.
 
 A value of `null` (0) indicates an uninitialized or invalid handle, whereas a non-zero value indicates a valid handle.
 
+## co_active
 ```c
 cothread_t co_active();
 ```
-Return handle to current cothread. Always returns a valid handle, even when called from the main program thread.
+Return handle to current cothread.
 
+Always returns a valid handle, even when called from the main program thread.
+
+## co_derive
 ```c
 cothread_t co_derive(void* memory,
                      unsigned int heapsize,
                      void (*coentry)(void));
 ```
 Initializes new cothread.
+
 This function is identical to `co_create`, only it attempts to use the provided
 memory instead of allocating new memory on the heap. Please note that certain
 implementations (currently only Windows Fibers) cannot be created using existing
 memory, and as such, this function will fail.
 
+## co_create
 ```c
 cothread_t co_create(unsigned int heapsize,
                      void (*coentry)(void));
 ```
 Create new cothread.
+
 `heapsize` is the amount of memory allocated for the cothread stack, specified
 in bytes. This is unfortunately impossible to make fully portable. It is
 recommended to specify sizes using `n * sizeof(void*)`. It is better to err
@@ -93,6 +107,7 @@ User is always responsible for deleting cothreads with `co_delete()`.
 
 Return value of `null` (0) indicates cothread creation failed.
 
+## co_delete
 ```c
 void co_delete(cothread_t cothread);
 ```
@@ -104,6 +119,7 @@ Passing handle of active cothread to this function is not allowed.
 
 Passing handle of primary cothread is not allowed.
 
+## co_switch
 ```c
 void co_switch(cothread_t cothread);
 ```
