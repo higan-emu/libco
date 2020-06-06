@@ -9,13 +9,10 @@
   #include <sys/mman.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-static thread_local unsigned long co_active_buffer[64];
-static thread_local cothread_t co_active_handle = 0;
-static void (*co_swap)(cothread_t, cothread_t) = 0;
+static thread_local unsigned long co_main_buffer[64];
+static thread_local cothread_t co_main_thread;
+static thread_local cothread_t* co_active_handle = 0;
+static void (*co_swap)(cothread_t*, cothread_t*) = 0;
 
 #ifdef LIBCO_MPROTECT
   alignas(4096)
@@ -37,48 +34,27 @@ static void co_init() {
   #endif
 }
 
-cothread_t co_active() {
-  if(!co_active_handle) co_active_handle = &co_active_buffer;
-  return co_active_handle;
+static void co_entrypoint_wrapper(void)
+{
+  co_active()->entrypoint();
+  co_halt();
 }
 
-cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) {
-  unsigned long* handle;
+cothread_err_t co_derive(cothread_t *co, void* memory, unsigned int size, co_entrypoint entrypoint, void* args0) {
   if(!co_swap) {
     co_init();
-    co_swap = (void (*)(cothread_t, cothread_t))co_swap_function;
+    co_swap = (void (*)(cothread_t*, cothread_t*))co_swap_function;
   }
-  if(!co_active_handle) co_active_handle = &co_active_buffer;
+  if(!co_active_handle) co_active_handle = co_active();
+  co_derive_init(co, memory, size, entrypoint, args0);
 
-  if(handle = (unsigned long*)memory) {
+  if((unsigned long*)memory) {
+    unsigned long* handle = (unsigned long*)memory;
     unsigned int offset = (size & ~15);
     unsigned long* p = (unsigned long*)((unsigned char*)handle + offset);
     handle[8] = (unsigned long)p;
-    handle[9] = (unsigned long)entrypoint;
+    handle[9] = (unsigned long)co_entrypoint_wrapper;
   }
 
-  return handle;
+  return cothread_ok;
 }
-
-cothread_t co_create(unsigned int size, void (*entrypoint)(void)) {
-  void* memory = malloc(size);
-  if(!memory) return (cothread_t)0;
-  return co_derive(memory, size, entrypoint);
-}
-
-void co_delete(cothread_t handle) {
-  free(handle);
-}
-
-void co_switch(cothread_t handle) {
-  cothread_t co_previous_handle = co_active_handle;
-  co_swap(co_active_handle = handle, co_previous_handle);
-}
-
-int co_serializable() {
-  return 1;
-}
-
-#ifdef __cplusplus
-}
-#endif

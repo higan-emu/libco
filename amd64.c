@@ -1,22 +1,19 @@
 #define LIBCO_C
-#include "libco.h"
 #include "settings.h"
 
 #include <assert.h>
 #include <stdlib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-static thread_local long long co_active_buffer[64];
-static thread_local cothread_t co_active_handle = 0;
-static void (*co_swap)(cothread_t, cothread_t) = 0;
+static thread_local long long co_main_buffer[64];
+static thread_local cothread_t co_main_thread;
+static thread_local cothread_t* co_active_handle = 0;
+static void (*co_swap)(void*, void*) = 0;
 
 #ifdef LIBCO_MPROTECT
   alignas(4096)
 #else
-  section(text)
+#pragma code_seg(".text")
+__declspec(allocate(".text"))
 #endif
 #ifdef _WIN32
   /* ABI: Win64 */
@@ -113,53 +110,21 @@ static void (*co_swap)(cothread_t, cothread_t) = 0;
   }
 #endif
 
-static void crash() {
-  assert(0);  /* called only if cothread_t entrypoint returns */
-}
-
-cothread_t co_active() {
-  if(!co_active_handle) co_active_handle = &co_active_buffer;
-  return co_active_handle;
-}
-
-cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) {
-  cothread_t handle;
+cothread_err_t co_derive(cothread_t *co, void* memory, unsigned int size, co_entrypoint entrypoint, void* args0) {
   if(!co_swap) {
     co_init();
-    co_swap = (void (*)(cothread_t, cothread_t))co_swap_function;
+    co_swap = (void (*)(void*, void*))(&co_swap_function[0]);
   }
-  if(!co_active_handle) co_active_handle = &co_active_buffer;
+  if(!co_active_handle) co_active_handle = co_active();
+  co_derive_init(co, memory, size, entrypoint, args0);
 
-  if(handle = (cothread_t)memory) {
+  if(memory) {
     unsigned int offset = (size & ~15) - 32;
-    long long *p = (long long*)((char*)handle + offset);  /* seek to top of stack */
-    *--p = (long long)crash;                              /* crash if entrypoint returns */
+    long long *p = (long long*)((char*)memory + offset);  /* seek to top of stack */
+    *--p = (long long)co_halt;                            /* halt if entrypoint returns */
     *--p = (long long)entrypoint;                         /* start of function */
-    *(long long*)handle = (long long)p;                   /* stack pointer */
+    *(long long*)memory = (long long)p;                   /* stack pointer */
   }
 
-  return handle;
+  return cothread_ok;
 }
-
-cothread_t co_create(unsigned int size, void (*entrypoint)(void)) {
-  void* memory = malloc(size);
-  if(!memory) return (cothread_t)0;
-  return co_derive(memory, size, entrypoint);
-}
-
-void co_delete(cothread_t handle) {
-  free(handle);
-}
-
-void co_switch(cothread_t handle) {
-  register cothread_t co_previous_handle = co_active_handle;
-  co_swap(co_active_handle = handle, co_previous_handle);
-}
-
-int co_serializable() {
-  return 1;
-}
-
-#ifdef __cplusplus
-}
-#endif

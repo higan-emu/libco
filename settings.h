@@ -27,7 +27,6 @@
 #endif
 
 #if defined(_MSC_VER)
-  #define section(name) __declspec(allocate("." #name))
 #elif defined(__APPLE__)
   #define section(name) __attribute__((section("__TEXT,__" #name)))
 #else
