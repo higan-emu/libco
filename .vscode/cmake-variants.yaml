@@ -1,0 +1,31 @@
+buildType:
+  default: debug
+  choices:
+    debug:
+      short: Debug
+      long: Emit debug information
+      buildType: Debug
+    release:
+      short: Release
+      long: Optimize generated code
+      buildType: Release
+    asan:
+      short: Asan
+      long: Instrument with Address Sanitizer
+      buildType: Asan
+    tsan:
+      short: Tsan
+      long: Instrument with Thread Sanitizer
+      buildType: Tsan
+toolchain:
+  default: arm-none
+  choices:
+    arm-none:
+      short: ArmNoneEABI
+      long: Arm None EABI
+      linkage: static
+      settings:
+        CMAKE_TOOLCHAIN_FILE: ${workspaceRoot}/cmake/gcc-arm-none-eabi.cmake
+    pc:
+      short: PC
+      long: Personal Computer
