@@ -21,6 +21,10 @@ It currently includes backends for:
 * POSIX platforms (setjmp)
 * Windows platforms (fibers)
 
+See [doc/targets.md] for details.
+
+See [doc/usage.md] for documentation.
+
 License
 =======
 
