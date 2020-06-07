@@ -1,5 +1,4 @@
 #define LIBCO_C
-#include "libco.h"
 #include "settings.h"
 
 #include <assert.h>
@@ -13,70 +12,47 @@
 extern "C" {
 #endif
 
-static thread_local unsigned long co_active_buffer[64];
+static thread_local unsigned long co_main_buffer[64];
+static thread_local cothread_t co_main_thread;
 static thread_local cothread_t co_active_handle = 0;
-static void (*co_swap)(cothread_t, cothread_t) = 0;
 
-#ifdef LIBCO_MPROTECT
-  alignas(4096)
-#else
-  section(text)
-#endif
-static const unsigned long co_swap_function[1024] = {
-  0xe8a16ff0,  /* stmia r1!, {r4-r11,sp,lr} */
-  0xe8b0aff0,  /* ldmia r0!, {r4-r11,sp,pc} */
-  0xe12fff1e,  /* bx lr                     */
-};
+__attribute__((naked))
+void co_swap(cothread_t new_co, cothread_t old_co)
+{
+  __asm__ (
+    "mov r2, sp\n"               // store old sp
+    "str r2, [r1]\n"             // here because thumb1 can't store sp directly
+    "add r1, 4\n"
+    "stmia r1!, {r4-r11,lr}\n"   // store old registers
 
-static void co_init() {
-  #ifdef LIBCO_MPROTECT
-  unsigned long addr = (unsigned long)co_swap_function;
-  unsigned long base = addr - (addr % sysconf(_SC_PAGESIZE));
-  unsigned long size = (addr - base) + sizeof co_swap_function;
-  mprotect((void*)base, size, PROT_READ | PROT_EXEC);
-  #endif
+    "ldr r3, [r0]\n"             // here because thumb1 can't load sp directly
+    "mov sp, r3\n"               // recover new sp
+    "add r0, 4\n"
+    "ldmia r0!, {r4-r11,pc}\n"   // recover new registers
+    "bx lr \n"
+  );
 }
 
-cothread_t co_active() {
-  if(!co_active_handle) co_active_handle = &co_active_buffer;
-  return co_active_handle;
+static void co_entrypoint_wrapper(void)
+{
+  co_active()->entrypoint();
+  co_halt();
 }
 
-cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) {
-  unsigned long* handle;
-  if(!co_swap) {
-    co_init();
-    co_swap = (void (*)(cothread_t, cothread_t))co_swap_function;
-  }
-  if(!co_active_handle) co_active_handle = &co_active_buffer;
+cothread_t co_derive_arg(void* memory, unsigned int size, co_entrypoint entrypoint, void* args0) {
+  cothread_t co = NULL;
+  if(!co_active_handle) co_active_handle = co_active();
 
-  if(handle = (unsigned long*)memory) {
-    unsigned int offset = (size & ~15);
+  co = co_derive_init(memory, size, entrypoint, args0);
+  {
+    unsigned long* handle = co->handle;
+    unsigned int offset = (co->size & ~15);
     unsigned long* p = (unsigned long*)((unsigned char*)handle + offset);
-    handle[8] = (unsigned long)p;
-    handle[9] = (unsigned long)entrypoint;
+    handle[0] = (unsigned long)p;                       // sp stack pointer
+    handle[9] = (unsigned long)co_entrypoint_wrapper;   // pc program counter
   }
 
-  return handle;
-}
-
-cothread_t co_create(unsigned int size, void (*entrypoint)(void)) {
-  void* memory = malloc(size);
-  if(!memory) return (cothread_t)0;
-  return co_derive(memory, size, entrypoint);
-}
-
-void co_delete(cothread_t handle) {
-  free(handle);
-}
-
-void co_switch(cothread_t handle) {
-  cothread_t co_previous_handle = co_active_handle;
-  co_swap(co_active_handle = handle, co_previous_handle);
-}
-
-int co_serializable() {
-  return 1;
+  return co;
 }
 
 #ifdef __cplusplus
