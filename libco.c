@@ -82,7 +82,7 @@ static cothread_t co_derive_init(void* memory, unsigned int size, co_entrypoint 
       co = (void*)base_addr;
       co->handle = (void*)handle_addr;
       co->allocated = NULL;
-      co->size = raw_end_addr - handle_addr;
+      co->size = (unsigned int)(raw_end_addr - handle_addr);
       co->entrypoint = entrypoint;
       co->args0 = args0;
       co->halt = 0;
