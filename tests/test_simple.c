@@ -11,7 +11,7 @@ void simple_for_and_finished(void)
     printf("Hello,  acrop_main %d\n", i);
     fflush(stdout);
     *args =  i;
-    co_yield();
+    co_switch_main();
   }
 }
 

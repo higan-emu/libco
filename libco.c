@@ -171,7 +171,7 @@ void co_switch(cothread_t handle) {
 }
 #endif
 
-void co_yield() {
+void co_switch_main() {
   co_switch(co_main());
 }
 

@@ -33,7 +33,7 @@ cothread_t co_derive_arg(void*, unsigned int, co_entrypoint, void* args0);
 cothread_t co_create_arg(unsigned int, co_entrypoint, void* args0);
 void co_delete(cothread_t);
 void co_switch(cothread_t);
-void co_yield();
+void co_switch_main();
 int co_serializable();
 
 #ifdef __cplusplus
