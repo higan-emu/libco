@@ -99,6 +99,14 @@
   #define section(name) __attribute__((section("." #name "#")))
 #endif
 
+/* If `thread_local` is declared as a macro (as is done in Glibc),
+ * the `LIBCO_MP` macro never comes into use resulting in warnings.
+ * The following is some dummy code to trick the compiler into thinking
+ * that the macro is in fact being used.
+ */
+#if defined(LIBCO_MP)
+#endif
+
 
 /* if defined(LIBCO_C) */
 #endif
