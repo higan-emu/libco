@@ -62,7 +62,7 @@ cothread_t co_active();
 ```
 Return handle to current cothread.
 
-Always returns a valid handle, even when called from the main program thread.
+Always returns a valid handle, even when called from the main program thread. If you call `co_active()` from the main program thread, you will get a handle to a pseudo-coroutine which represents the CPU context of the default thread of execution. Passing this handle to a `co_switch(main_thread_handle)` will lead you back to the main function again, as if a `co_switch(other_thread)` just returns.
 
 ## co_derive
 ```c
