@@ -1,7 +1,12 @@
 #include "test.h"
 #include <stdint.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <memoryapi.h>
+#include <handleapi.h>
+#else
 #include <sys/mman.h>
-
+#endif
 namespace Thread {
   cothread_t host;
   cothread_t cpu;
@@ -80,11 +85,30 @@ auto main() -> int {
     return 1;
   }
 
-  Memory::buffer = (uint8_t*)mmap(
-    (void*)0x10'0000'0000, 2 * 65536,
-    PROT_READ | PROT_WRITE | PROT_EXEC,
-    MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0
-  );
+  #ifndef _WIN32
+  
+    Memory::buffer = (uint8_t*)mmap(
+      (void*)0x10'0000'0000, 2 * 65536,
+      PROT_READ | PROT_WRITE | PROT_EXEC,
+      MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0
+    );
+    
+  #else
+  
+    HANDLE handle = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, 2 * 65536, nullptr);
+    Memory::buffer = static_cast<uint8_t*> (MapViewOfFile
+                      (
+                          handle,                             // HANDLE hFileMappingObject,
+                          (FILE_MAP_WRITE | FILE_MAP_READ),   // DWORD  dwDesiredAccess,
+                          0,                                  // DWORD  dwFileOffsetHigh,
+                          0,                                  // DWORD  dwFileOffsetLow,
+                          2 * 65536                           // SIZE_T dwNumberOfBytesToMap
+                      ));
+    
+    CloseHandle (handle);
+    
+  #endif
+  
   Memory::buffer[0] = 42;
   printf("%p (%u)\n", Memory::buffer, Memory::buffer[0]);
 
@@ -112,6 +136,8 @@ auto main() -> int {
 
   Thread::cpu = nullptr;
   Thread::apu = nullptr;
-  munmap((void*)0x900000000, 2 * 65536);
+  #ifndef _WIN32
+    munmap((void*)0x900000000, 2 * 65536);
+  #endif
   return 0;
 }

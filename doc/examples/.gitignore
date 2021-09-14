@@ -2,3 +2,11 @@ test_args
 test_serialization
 test_timing
 *.o
+bin
+obj
+Makefile
+*.vcxproj
+*.vcxproj.user
+*.sln
+*.make
+.vs

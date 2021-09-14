@@ -69,7 +69,7 @@ int main() {
   co_switch(thread[1]);
 
   printf("\ndone\n");
-#if defined(_MSC_VER) || defined(__DJGPP__)
+#if defined(__DJGPP__)
   getch();
 #endif
   return 0;
