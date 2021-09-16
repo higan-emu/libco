@@ -45,7 +45,7 @@ project "timing-test"
     filter { "system:windows", "action:gmake*" }
         buildoptions { "-fdiagnostics-color=always" }
 
-    filter { "action:vs*" }
+    filter { "system:windows", "action:vs*" }
         defines
         {
             "LIBCO_MPROTECT"
@@ -87,7 +87,7 @@ project "argument-test"
     filter { "system:windows", "action:gmake*" }
         buildoptions { "-fdiagnostics-color=always" }
 
-    filter { "action:vs*" }
+    filter { "system:windows", "action:vs*" }
         defines
         {
             "LIBCO_MPROTECT"
@@ -129,7 +129,7 @@ project "serialization-test"
     filter { "system:windows", "action:gmake*" }
         buildoptions { "-fdiagnostics-color=always" }
 
-    filter { "action:vs*" }
+    filter { "system:windows", "action:vs*" }
         defines
         {
             "LIBCO_MPROTECT"
