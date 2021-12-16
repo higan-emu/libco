@@ -48,7 +48,7 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
   }
   if(!co_active_handle) co_active_handle = &co_active_buffer;
 
-  if(handle = (unsigned long*)memory) {
+  if((handle = (unsigned long*)memory)) {
     unsigned int offset = (size & ~15);
     unsigned long* p = (unsigned long*)((unsigned char*)handle + offset);
     handle[8] = (unsigned long)p;
