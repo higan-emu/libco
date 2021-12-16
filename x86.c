@@ -81,7 +81,7 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
   }
   if(!co_active_handle) co_active_handle = &co_active_buffer;
 
-  if(handle = (cothread_t)memory) {
+  if((handle = (cothread_t)memory)) {
     unsigned int offset = (size & ~15) - 32;
     long *p = (long*)((char*)handle + offset);  /* seek to top of stack */
     *--p = (long)crash;                         /* crash if entrypoint returns */
