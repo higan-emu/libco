@@ -52,8 +52,9 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
   VALGRIND_STACK_REGISTER(memory, memory + size);
 
   if((handle = (unsigned long*)memory)) {
-    unsigned int offset = (size & ~15);
-    unsigned long* p = (unsigned long*)((unsigned char*)handle + offset);
+    unsigned long stack_top = (unsigned long)handle + size;
+    stack_top &= ~((unsigned long) 15);
+    unsigned long *p = (unsigned long*)(stack_top);
     handle[8] = (unsigned long)p;
     handle[9] = (unsigned long)entrypoint;
   }
