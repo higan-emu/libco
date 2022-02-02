@@ -94,11 +94,13 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
   #endif
 
   if((handle = (cothread_t)memory)) {
-    unsigned int offset = (size & ~15) - 32;
-    long *p = (long*)((char*)handle + offset);  /* seek to top of stack */
-    *--p = (long)crash;                         /* crash if entrypoint returns */
-    *--p = (long)entrypoint;                    /* start of function */
-    *(long*)handle = (long)p;                   /* stack pointer */
+    unsigned long stack_top = (unsigned long)handle + size;
+    stack_top -= 32;
+    stack_top &= ~((unsigned long) 15);
+    long *p = (long*)(stack_top);  /* seek to top of stack */
+    *--p = (long)crash;            /* crash if entrypoint returns */
+    *--p = (long)entrypoint;       /* start of function */
+    *(long*)handle = (long)p;      /* stack pointer */
   }
 
   return handle;
