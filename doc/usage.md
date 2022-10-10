@@ -39,7 +39,7 @@ to make a whole new port.
 ```c
 typedef void* cothread_t;
 
-cothread_t co_active();
+cothread_t co_active(void);
 cothread_t co_create(unsigned int heapsize, void (*coentry)(void));
 void       co_delete(cothread_t cothread);
 void       co_switch(cothread_t cothread);
@@ -60,7 +60,7 @@ state to which the execution can be co_switch()ed to.
 
 ## co_active
 ```c
-cothread_t co_active();
+cothread_t co_active(void);
 ```
 Return handle to current cothread.
 

@@ -220,7 +220,7 @@ __asm__(
   ".size swap_context, .-swap_context\n"
 );
 
-cothread_t co_active() {
+cothread_t co_active(void) {
   if(!co_active_handle) {
     co_active_handle = (struct ppc64_context*)LIBCO_MALLOC(MIN_STACK + sizeof(struct ppc64_context));
   }
@@ -269,7 +269,7 @@ void co_switch(cothread_t to) {
   swap_context((struct ppc64_context*)to, from);
 }
 
-int co_serializable() {
+int co_serializable(void) {
   return 1;
 }
 

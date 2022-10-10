@@ -16,7 +16,7 @@ static void __stdcall co_thunk(void* coentry) {
   ((void (*)(void))coentry)();
 }
 
-cothread_t co_active() {
+cothread_t co_active(void) {
   if(!co_active_) {
     ConvertThreadToFiber(0);
     co_active_ = GetCurrentFiber();
@@ -46,7 +46,7 @@ void co_switch(cothread_t cothread) {
   SwitchToFiber(cothread);
 }
 
-int co_serializable() {
+int co_serializable(void) {
   return 0;
 }
 
