@@ -412,7 +412,7 @@ static void co_init_(void) {
   co_active_handle = co_create_(state_size, (uintptr_t)&co_switch);
 }
 
-cothread_t co_active() {
+cothread_t co_active(void) {
   if(!co_active_handle) co_init_();
 
   return co_active_handle;
@@ -425,6 +425,6 @@ void co_switch(cothread_t t) {
   CO_SWAP_ASM(t, old);
 }
 
-int co_serializable() {
+int co_serializable(void) {
   return 0;
 }

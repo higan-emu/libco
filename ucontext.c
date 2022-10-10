@@ -26,7 +26,7 @@ extern "C" {
 static thread_local ucontext_t co_primary;
 static thread_local ucontext_t* co_running = 0;
 
-cothread_t co_active() {
+cothread_t co_active(void) {
   if(!co_running) co_running = &co_primary;
   return (cothread_t)co_running;
 }
@@ -77,7 +77,7 @@ void co_switch(cothread_t cothread) {
   swapcontext(old_thread, co_running);
 }
 
-int co_serializable() {
+int co_serializable(void) {
   return 0;
 }
 
