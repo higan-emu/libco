@@ -2,6 +2,11 @@
 #include "libco.h"
 #include "settings.h"
 
+#if __has_include(<valgrind/valgrind.h>)
+  #include <valgrind/valgrind.h>
+  #define HAS_VALGRIND
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -80,6 +85,11 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
     co_swap = (void (fastcall*)(cothread_t, cothread_t))co_swap_function;
   }
   if(!co_active_handle) co_active_handle = &co_active_buffer;
+
+#ifdef HAS_VALGRIND
+  if (RUNNING_ON_VALGRIND)
+    VALGRIND_STACK_REGISTER(memory, memory + size);
+#endif
 
   if((handle = (cothread_t)memory)) {
     unsigned int offset = (size & ~15) - 32;
