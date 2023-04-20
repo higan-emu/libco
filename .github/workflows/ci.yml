@@ -132,6 +132,52 @@ jobs:
             ./valgrind-wrapper.sh --expect-failure ./test_timing
           fi
 
+  build-windows:
+    name: Windows (${{ matrix.arch }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, x86]
+    steps:
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+      - uses: actions/checkout@v3
+      - name: Build
+        working-directory: doc/examples
+        run: |
+          # __STDC__ required for `alignas` (or using /Za)
+          cl /I ../.. /D LIBCO_MPROTECT /Zc:__STDC__ /c ../../libco.c
+          cl /I ../.. test_args.cpp libco.obj
+          cl /I ../.. test_timing.cpp libco.obj
+          # Skip test_serialization that uses sys/mman.h
+      - name: Run examples
+        working-directory: doc/examples
+        run: |
+          ./test_args.exe
+          ./test_timing.exe
+
+  build-windows-fibers:
+    name: Windows (fibers)
+    runs-on: windows-latest
+    steps:
+      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: actions/checkout@v3
+      - name: Build
+        working-directory: doc/examples
+        run: |
+          # __STDC__ required for `alignas` (or using /Za)
+          cl /I ../.. /D LIBCO_MPROTECT /Zc:__STDC__ /Folibco /c ../../fiber.c
+          cl /I ../.. test_args.cpp libco.obj
+          cl /I ../.. test_timing.cpp libco.obj
+          # Skip test_serialization that uses sys/mman.h
+      - name: Run examples
+        working-directory: doc/examples
+        run: |
+          ./test_args.exe
+          ./test_timing.exe
+
   sanitizers:
     name: ${{ matrix.sanitizer }}-sanitizer
     runs-on: ubuntu-latest
