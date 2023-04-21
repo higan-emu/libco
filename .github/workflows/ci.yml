@@ -36,9 +36,7 @@ jobs:
         run: |
           ./test_args
           ./test_timing
-          if ./test_serialization ; then
-            (echo "Expected test_serialization to fail"; exit 98)
-          fi
+          ./test_serialization
       - name: Run valgrind
         working-directory: doc/examples
         run: |
@@ -68,20 +66,12 @@ jobs:
           install: |
             apt-get update -q -y
             apt-get install -q -y --no-install-recommends build-essential valgrind
-          env: |
-            target: ${{ matrix.target }}
           run: |
             cd doc/examples
             ./build.sh
             ./test_args
             ./test_timing
-            if [ "$target" == "arm" ]; then
-              if ./test_serialization ; then
-                (echo "Expected test_serialization to fail"; exit 98)
-              fi
-            else
-              ./test_serialization
-            fi
+            ./test_serialization
             ./valgrind-wrapper.sh --expect-failure ./test_args
             ./valgrind-wrapper.sh --expect-failure ./test_serialization
             # test_timing not run with valgrind on qemu since it's very slow.
@@ -151,12 +141,13 @@ jobs:
           cl /I ../.. /D LIBCO_MPROTECT /Zc:__STDC__ /c ../../libco.c
           cl /I ../.. test_args.cpp libco.obj
           cl /I ../.. test_timing.cpp libco.obj
-          # Skip test_serialization that uses sys/mman.h
+          cl /I ../.. test_serialization.cpp libco.obj
       - name: Run examples
         working-directory: doc/examples
         run: |
           ./test_args.exe
           ./test_timing.exe
+          ./test_serialization
 
   build-windows-fibers:
     name: Windows (fibers)
@@ -171,7 +162,7 @@ jobs:
           cl /I ../.. /D LIBCO_MPROTECT /Zc:__STDC__ /Folibco /c ../../fiber.c
           cl /I ../.. test_args.cpp libco.obj
           cl /I ../.. test_timing.cpp libco.obj
-          # Skip test_serialization that uses sys/mman.h
+          # Serialization not supported
       - name: Run examples
         working-directory: doc/examples
         run: |
@@ -201,7 +192,4 @@ jobs:
           clang++ $FLAGS -o test_serialization libco.o test_serialization.o
           ./test_args
           ./test_timing
-          if ./test_serialization ; then
-            # ASan don't like mmap() with MAP_FIXED
-            (echo "Expected test_serialization to fail"; exit 98)
-          fi
+          ./test_serialization
