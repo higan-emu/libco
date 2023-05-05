@@ -19,6 +19,11 @@
 #include <stdlib.h>
 #include <ucontext.h>
 
+#if __has_include(<valgrind/valgrind.h>)
+  #include <valgrind/valgrind.h>
+  #define HAS_VALGRIND
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,6 +46,10 @@ cothread_t co_derive(void* memory, unsigned int heapsize, void (*coentry)(void))
       thread->uc_link = co_running;
       thread->uc_stack.ss_size = heapsize;
       makecontext(thread, coentry, 0);
+#ifdef HAS_VALGRIND
+      if (RUNNING_ON_VALGRIND)
+        VALGRIND_STACK_REGISTER(thread->uc_stack.ss_sp, thread->uc_stack.ss_sp + heapsize);
+#endif
     } else {
       thread = 0;
     }
@@ -56,6 +65,10 @@ cothread_t co_create(unsigned int heapsize, void (*coentry)(void)) {
       thread->uc_link = co_running;
       thread->uc_stack.ss_size = heapsize;
       makecontext(thread, coentry, 0);
+#ifdef HAS_VALGRIND
+      if (RUNNING_ON_VALGRIND)
+        VALGRIND_STACK_REGISTER(thread->uc_stack.ss_sp, thread->uc_stack.ss_sp + heapsize);
+#endif
     } else {
       co_delete((cothread_t)thread);
       thread = 0;
