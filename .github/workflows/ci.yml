@@ -82,6 +82,39 @@ jobs:
             fi
             # test_timing not run with valgrind on qemu since it's very slow.
 
+  build-qemu-ppc:
+    name: ppc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Prepare
+        run: |
+          sudo apt-get update -q -y
+          sudo apt-get install -y qemu binfmt-support qemu-user-static
+      - name: Register QEMU as executor via binfmt_misc
+        uses: addnab/docker-run-action@v3
+        with:
+          image: multiarch/qemu-user-static:register
+          options: --privileged
+      - name: Build and run tests in a PowerPC container
+        uses: addnab/docker-run-action@v3
+        with:
+          image: lpenz/debian-jessie-powerpc:latest
+          # Valgrind on Debian Jessie powerpc requires <= 8MB stack size to work.
+          # Set QEMUs stack size to 8MB since Github runners use 16MB default.
+          options: -v ${{ github.workspace }}:/work -e QEMU_STACK_SIZE=8388608
+          run: |
+            sed -i 's;http://deb.debian.org;http://archive.debian.org;' /etc/apt/sources.list
+            apt-get update -q -y
+            apt-get install -y --allow-unauthenticated build-essential valgrind
+            cd /work/doc/examples
+            ./build.sh
+            ./test_args
+            ./test_timing
+            # Serialization not supported
+            ./valgrind-wrapper.sh ./test_args
+            # test_timing not run with valgrind on qemu since it's very slow.
+
   build-posix:
     name: ${{ matrix.target }}
     runs-on: ubuntu-latest
