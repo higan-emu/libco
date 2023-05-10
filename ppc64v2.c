@@ -3,13 +3,9 @@
 #define LIBCO_C
 #include "libco.h"
 #include "settings.h"
+#include "valgrind.h"
 
 #include <stdint.h>
-
-#if __has_include(<valgrind/valgrind.h>)
-  #include <valgrind/valgrind.h>
-  #define HAS_VALGRIND
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -236,10 +232,7 @@ cothread_t co_derive(void* memory, unsigned int size, void (*coentry)(void)) {
   uint8_t* sp;
   struct ppc64_context* context = (struct ppc64_context*)memory;
 
-#ifdef HAS_VALGRIND
-  if (RUNNING_ON_VALGRIND)
-    VALGRIND_STACK_REGISTER(memory, memory + size);
-#endif
+  VALGRIND_STACK_REGISTER(memory, memory + size);
 
   /* save current context into new context to initialize it */
   swap_context(context, context);

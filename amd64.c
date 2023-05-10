@@ -1,11 +1,7 @@
 #define LIBCO_C
 #include "libco.h"
 #include "settings.h"
-
-#if __has_include(<valgrind/valgrind.h>)
-#include <valgrind/valgrind.h>
-#define HAS_VALGRIND
-#endif
+#include "valgrind.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -132,10 +128,7 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
   }
   if(!co_active_handle) co_active_handle = &co_active_buffer;
 
-#ifdef HAS_VALGRIND
-  if (RUNNING_ON_VALGRIND)
-    VALGRIND_STACK_REGISTER(memory, memory + size);
-#endif
+  VALGRIND_STACK_REGISTER(memory, memory + size);
 
   if((handle = (cothread_t)memory)) {
     unsigned int offset = (size & ~15) - 32;
