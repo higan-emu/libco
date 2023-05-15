@@ -66,20 +66,18 @@ jobs:
           install: |
             apt-get update -q -y
             apt-get install -q -y --no-install-recommends build-essential valgrind
+          env: |
+            # Valgrind on arm will fail if the stack size is larger than 8MB.
+            # Set QEMUs stack size to 8MB since Github runners use 16MB default.
+            QEMU_STACK_SIZE: 8388608
           run: |
             cd doc/examples
             ./build.sh
             ./test_args
             ./test_timing
             ./test_serialization
-            if [ "${{ matrix.target }}" == "arm" ]; then
-              # "valgrind: I failed to allocate space for the application's stack"
-              ./valgrind-wrapper.sh --expect-failure ./test_args
-              ./valgrind-wrapper.sh --expect-failure ./test_serialization
-            else
-              ./valgrind-wrapper.sh ./test_args
-              ./valgrind-wrapper.sh --expect-failure ./test_serialization
-            fi
+            ./valgrind-wrapper.sh ./test_args
+            ./valgrind-wrapper.sh --expect-failure ./test_serialization
             # test_timing not run with valgrind on qemu since it's very slow.
 
   build-qemu-ppc:
