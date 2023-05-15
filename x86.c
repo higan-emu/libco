@@ -40,6 +40,9 @@ static const unsigned char co_swap_function[4096] = {
 };
 
 #ifdef _WIN32
+  /* The macro logic below matches what valgrind.h is able to handle. Although
+   * there's no Valgrind on Windows, it's possible to run a Windows exe on Linux
+   * with Wine and Valgrind. See https://wiki.winehq.org/Wine_and_Valgrind. */
   #if defined(__GNUC__) || defined(_MSC_VER)
     #include "valgrind.h"
   #endif
