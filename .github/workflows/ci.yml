@@ -20,7 +20,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -q -y
-          sudo apt-get install -y gcc-multilib g++-multilib valgrind libc6-dbg libc6-dbg:i386
+          sudo apt-get install -y gcc-multilib g++-multilib valgrind libc6-dbg libc6-dbg:i386 libgcc-s1:i386
       - name: Build
         working-directory: doc/examples
         run: |
