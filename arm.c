@@ -1,6 +1,7 @@
 #define LIBCO_C
 #include "libco.h"
 #include "settings.h"
+#include "valgrind.h"
 
 #ifdef LIBCO_MPROTECT
   #include <unistd.h>
@@ -47,6 +48,8 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
     co_swap = (void (*)(cothread_t, cothread_t))co_swap_function;
   }
   if(!co_active_handle) co_active_handle = &co_active_buffer;
+
+  VALGRIND_STACK_REGISTER(memory, memory + size);
 
   if((handle = (unsigned long*)memory)) {
     unsigned int offset = (size & ~15);

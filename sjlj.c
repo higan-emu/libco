@@ -6,6 +6,7 @@
 #define LIBCO_C
 #include "libco.h"
 #include "settings.h"
+#include "valgrind.h"
 
 #define _BSD_SOURCE
 #define _XOPEN_SOURCE 500
@@ -74,6 +75,8 @@ cothread_t co_derive(void* memory, unsigned int size, void (*coentry)(void)) {
     if(thread->coentry != coentry) {
       co_delete(thread);
       thread = 0;
+    } else {
+      VALGRIND_STACK_REGISTER(stack.ss_sp, stack.ss_sp + size);
     }
   }
 
@@ -114,6 +117,8 @@ cothread_t co_create(unsigned int size, void (*coentry)(void)) {
     if(thread->coentry != coentry) {
       co_delete(thread);
       thread = 0;
+    } else {
+      VALGRIND_STACK_REGISTER(stack.ss_sp, stack.ss_sp + size);
     }
   }
 

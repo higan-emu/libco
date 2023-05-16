@@ -40,8 +40,8 @@ jobs:
       - name: Run valgrind
         working-directory: doc/examples
         run: |
-          ./valgrind-wrapper.sh --expect-failure ./test_args
-          ./valgrind-wrapper.sh --expect-failure ./test_timing
+          ./valgrind-wrapper.sh ./test_args
+          ./valgrind-wrapper.sh ./test_timing
           ./valgrind-wrapper.sh --expect-failure ./test_serialization
 
   build-qemu:
@@ -72,8 +72,14 @@ jobs:
             ./test_args
             ./test_timing
             ./test_serialization
-            ./valgrind-wrapper.sh --expect-failure ./test_args
-            ./valgrind-wrapper.sh --expect-failure ./test_serialization
+            if [ "${{ matrix.target }}" == "arm" ]; then
+              # "valgrind: I failed to allocate space for the application's stack"
+              ./valgrind-wrapper.sh --expect-failure ./test_args
+              ./valgrind-wrapper.sh --expect-failure ./test_serialization
+            else
+              ./valgrind-wrapper.sh ./test_args
+              ./valgrind-wrapper.sh --expect-failure ./test_serialization
+            fi
             # test_timing not run with valgrind on qemu since it's very slow.
 
   build-posix:
@@ -116,10 +122,13 @@ jobs:
       - name: Run valgrind
         working-directory: doc/examples
         run: |
-          ./valgrind-wrapper.sh --expect-failure ./test_args
-          # test_timing not run for ucontext since it's very slow.
-          if [ "${{ matrix.target }}" != "ucontext" ]; then
+          if [ "${{ matrix.target }}" == "setjmp" ]; then
+            # Valgrind error "Invalid write of size 8" (why?)
+            ./valgrind-wrapper.sh --expect-failure ./test_args
             ./valgrind-wrapper.sh --expect-failure ./test_timing
+          else
+            # test_timing not run for ucontext since it's very slow.
+            ./valgrind-wrapper.sh ./test_args
           fi
 
   build-windows:

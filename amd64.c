@@ -66,6 +66,11 @@ static void (*co_swap)(cothread_t, cothread_t) = 0;
     0xff, 0xe0,                    /* jmp rax                */
   };
 
+  /* Valgrind is available on MINGW but not on MSVC. */
+  #if defined(__GNUC__)
+    #include "valgrind.h"
+  #endif
+
   #include <windows.h>
 
   static void co_init(void) {
@@ -95,6 +100,7 @@ static void (*co_swap)(cothread_t, cothread_t) = 0;
     0xff, 0xe0,              /* jmp rax          */
   };
 
+  #include "valgrind.h"
   #ifdef LIBCO_MPROTECT
     #include <unistd.h>
     #include <sys/mman.h>
@@ -126,6 +132,10 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
     co_swap = (void (*)(cothread_t, cothread_t))co_swap_function;
   }
   if(!co_active_handle) co_active_handle = &co_active_buffer;
+
+  #if defined(__VALGRIND_MAJOR__)
+    VALGRIND_STACK_REGISTER(memory, memory + size);
+  #endif
 
   if((handle = (cothread_t)memory)) {
     unsigned int offset = (size & ~15) - 32;
