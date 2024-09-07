@@ -178,7 +178,7 @@ jobs:
         working-directory: doc/examples
         run: |
           # __STDC__ required for `alignas` (or using /Za)
-          cl /I ../.. /D LIBCO_MPROTECT /Zc:__STDC__ /c ../../libco.c
+          cl /I ../.. /Zc:__STDC__ /c ../../libco.c
           cl /I ../.. test_args.cpp libco.obj
           cl /I ../.. test_timing.cpp libco.obj
           cl /I ../.. test_serialization.cpp libco.obj
@@ -199,7 +199,7 @@ jobs:
         working-directory: doc/examples
         run: |
           # __STDC__ required for `alignas` (or using /Za)
-          cl /I ../.. /D LIBCO_MPROTECT /Zc:__STDC__ /Folibco /c ../../fiber.c
+          cl /I ../.. /Zc:__STDC__ /Folibco /c ../../fiber.c
           cl /I ../.. test_args.cpp libco.obj
           cl /I ../.. test_timing.cpp libco.obj
           # Serialization not supported
