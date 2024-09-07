@@ -116,7 +116,10 @@
 #endif
 
 #if defined(_MSC_VER)
-  #define section(name) __declspec(allocate("." #name))
+  /* workaround for msvc preprocessor stringification behavior */
+  #define LIBCO_STRINGIFY(x) #x
+  #define LIBCO_TOSTRING(x) LIBCO_STRINGIFY(x)
+  #define section(name) __pragma(code_seg(LIBCO_TOSTRING("." #name))) __declspec(allocate(LIBCO_TOSTRING("." #name)))
 #elif defined(__APPLE__)
   #define section(name) __attribute__((section("__TEXT,__" #name)))
 #else
