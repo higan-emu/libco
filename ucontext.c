@@ -10,13 +10,12 @@
   use this library only as a *last resort*
 */
 
+#define _POSIX_C_SOURCE 200112L
 #define LIBCO_C
 #include "libco.h"
 #include "settings.h"
 #include "valgrind.h"
 
-#define _BSD_SOURCE
-#define _XOPEN_SOURCE 500
 #include <stdlib.h>
 #include <ucontext.h>
 
