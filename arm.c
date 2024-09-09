@@ -53,8 +53,9 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
 
   if((handle = (unsigned long*)memory)) {
     unsigned long stack_top = (unsigned long)handle + size;
+    unsigned long *p;
     stack_top &= ~((unsigned long) 15);
-    unsigned long *p = (unsigned long*)(stack_top);
+    p = (unsigned long*)(stack_top);
     handle[8] = (unsigned long)p;
     handle[9] = (unsigned long)entrypoint;
   }

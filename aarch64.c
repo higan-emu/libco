@@ -77,8 +77,9 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entrypoint)(void)) 
 
   if((handle = (unsigned long*)memory)) {
     unsigned long stack_top = (unsigned long)handle + size;
+    unsigned long *p;
     stack_top &= ~((unsigned long) 15);
-    unsigned long *p = (unsigned long*)(stack_top);
+    p = (unsigned long*)(stack_top);
     handle[0]  = (unsigned long)p;           /* x16 (stack pointer) */
     handle[1]  = (unsigned long)entrypoint;  /* x30 (link register) */
     handle[12] = (unsigned long)p;           /* x29 (frame pointer) */

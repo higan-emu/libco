@@ -24,7 +24,7 @@ jobs:
       - name: Build
         working-directory: doc/examples
         run: |
-          cc ${{ matrix.flags }} -std=c89 -Wdeclaration-after-statement -I../.. -o libco.o -c ../../libco.c
+          cc ${{ matrix.flags }} -std=c89 -Wdeclaration-after-statement -Werror -I../.. -o libco.o -c ../../libco.c
           c++ ${{ matrix.flags }} -I../.. -c test_timing.cpp
           c++ ${{ matrix.flags }} -o test_timing libco.o test_timing.o
           c++ ${{ matrix.flags }} -I../.. -c test_args.cpp
@@ -223,7 +223,7 @@ jobs:
         env:
           FLAGS: -fsanitize=${{ matrix.sanitizer }} -fno-sanitize-recover=all -fno-omit-frame-pointer
         run: |
-          clang $FLAGS -std=c89 -Wdeclaration-after-statement -I../.. -o libco.o -c ../../libco.c
+          clang $FLAGS -std=c89 -Wdeclaration-after-statement -Werror -I../.. -o libco.o -c ../../libco.c
           clang++ $FLAGS -I../.. -c test_timing.cpp
           clang++ $FLAGS -o test_timing libco.o test_timing.o
           clang++ $FLAGS -I../.. -c test_args.cpp
