@@ -43,9 +43,10 @@ cothread_t co_active(void) {
 }
 
 cothread_t co_derive(void* memory, unsigned int size, void (*coentry)(void)) {
+  cothread_struct* thread;
   if(!co_running) co_running = &co_primary;
 
-  cothread_struct* thread = (cothread_struct*)memory;
+  thread = (cothread_struct*)memory;
   memory = (unsigned char*)memory + sizeof(cothread_struct);
   size -= sizeof(cothread_struct);
   if(thread) {
@@ -87,9 +88,10 @@ cothread_t co_derive(void* memory, unsigned int size, void (*coentry)(void)) {
 }
 
 cothread_t co_create(unsigned int size, void (*coentry)(void)) {
+  cothread_struct* thread;
   if(!co_running) co_running = &co_primary;
 
-  cothread_struct* thread = (cothread_struct*)malloc(sizeof(cothread_struct));
+  thread = (cothread_struct*)malloc(sizeof(cothread_struct));
   if(thread) {
     struct sigaction handler;
     struct sigaction old_handler;

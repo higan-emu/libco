@@ -261,9 +261,9 @@ static const uint32_t libco_ppc_code[1024] = {
 #endif
 
 static uint32_t* co_derive_(void* memory, unsigned size, uintptr_t entry) {
-  (void)entry;
-
   uint32_t* t = (uint32_t*)memory;
+
+  (void)entry;
 
   #if LIBCO_PPCDESC
   if(t) {
@@ -327,9 +327,9 @@ cothread_t co_derive(void* memory, unsigned int size, void (*entry_)(void)) {
 }
 
 static uint32_t* co_create_(unsigned size, uintptr_t entry) {
-  (void)entry;
-
   uint32_t* t = (uint32_t*)LIBCO_MALLOC(size);
+
+  (void)entry;
 
   #if LIBCO_PPCDESC
   if(t) {
