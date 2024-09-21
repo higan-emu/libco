@@ -11,6 +11,8 @@
     #include "x86.c"
   #elif defined(__amd64__)
     #include "amd64.c"
+  #elif defined(__vita__)
+    #include "scefiber.c"
   #elif defined(__arm__)
     #include "arm.c"
   #elif defined(__aarch64__)
