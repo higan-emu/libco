@@ -27,6 +27,8 @@ static const uint32_t co_swap_function[1024] = {
   0x910003f0,  /* mov x16,sp           */
   0xa9007830,  /* stp x16,x30,[x1]     */
   0xa9407810,  /* ldp x16,x30,[x0]     */
+  0xf940301d,  /* ldr x29,    [x0, 96] */
+  0xa9bf7bfd,  /* stp x29, x30, [sp, #-16]! */
   0x9100021f,  /* mov sp,x16           */
   0xa9015033,  /* stp x19,x20,[x1, 16] */
   0xa9415013,  /* ldp x19,x20,[x0, 16] */
@@ -40,6 +42,7 @@ static const uint32_t co_swap_function[1024] = {
   0xa945701b,  /* ldp x27,x28,[x0, 80] */
   0xf900303d,  /* str x29,    [x1, 96] */
   0xf940301d,  /* ldr x29,    [x0, 96] */
+  0xa8c17bfd,  /* ldp x29, x30, [sp], #16 */
   0x6d072428,  /* stp d8, d9, [x1,112] */
   0x6d472408,  /* ldp d8, d9, [x0,112] */
   0x6d082c2a,  /* stp d10,d11,[x1,128] */
